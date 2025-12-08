@@ -430,8 +430,8 @@ function downloadPegon(){
 
 /* ====== Convert button wrapper (async) ====== */
 async function convert(){
-  document.getElementById("pegonOutput").innerText =
-  await convertToPegon(input);
+  let input = document.getElementById("latinInput").value;
+  document.getElementById("pegonOutput").innerText = await convertToPegon(input);
 }
 
 /* ====== Keyboard shortcut (Shift+Enter) - gunakan async handler ====== */
