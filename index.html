@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undangan Pernikahan Fulan & Fulanah</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap');
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #fff9f5, #fceee8);
+      color: #333;
+      text-align: center;
+      overflow-x: hidden;
+    }
+    header {padding: 2rem;}
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      color: #b97b56;
+      animation: fadeIn 1.5s ease;
+    }
+    header p {color: #666; margin-top: 0.5rem;}
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    nav button {
+      background: #b97b56;
+      border: none;
+      padding: 0.6rem 1.3rem;
+      border-radius: 30px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    nav button:hover {background: #a06747; transform: translateY(-2px);}
+    section {
+      display: none;
+      animation: fadeSlide 0.7s ease;
+      padding: 2rem 1rem;
+    }
+    section.active {display: block;}
+    .card {
+      background: white;
+      margin: auto;
+      padding: 1.5rem;
+      border-radius: 20px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+      max-width: 460px;
+    }
+    h2, h3 {
+      font-family: 'Playfair Display', serif;
+      color: #b97b56;
+    }
+    iframe {
+      width: 100%;
+      height: 250px;
+      border: none;
+      border-radius: 15px;
+      margin-top: 1rem;
+    }
+    footer {
+      margin-top: 2rem;
+      padding: 1rem;
+      color: #888;
+      font-size: 0.9rem;
+    }
+    input, textarea {
+      width: 100%;
+      margin-bottom: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 0.6rem;
+      font-family: inherit;
+    }
+    button.submit {
+      background: #b97b56;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+    }
+    @keyframes fadeSlide {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Musik romantis -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2023/03/29/audio_1cbdf1b5ef.mp3?filename=romantic-wedding-song-14477.mp3" type="audio/mpeg">
+  </audio>
+
+  <header>
+    <h1>The Wedding of</h1>
+    <p><strong>Fulan & Fulanah</strong></p>
+  </header>
+
+  <nav>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('reception')">Resepsi</button>
+    <button onclick="showPage('wishes')">Ucapan</button>
+  </nav>
+
+  <section id="home" class="active">
+    <div class="card">
+      <h2>Assalamu’alaikum Warahmatullahi Wabarakatuh</h2>
+      <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami.</p>
+      <h2 style="margin-top:1rem;">Fulan & Fulanah</h2>
+      <p style="margin-top:0.5rem;">Ahad, 20 Oktober 2025</p>
+    </div>
+  </section>
+
+  <section id="reception">
+    <div class="card">
+      <h3>Resepsi Pernikahan</h3>
+      <p><strong>Tanggal:</strong> Ahad, 20 Oktober 2025</p>
+      <p><strong>Waktu:</strong> 10.00 WIB – Selesai</p>
+      <p><strong>Tempat:</strong> Gedung Serbaguna Harmoni, Jl. Merpati No. 45, Bandung</p>
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!..." allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <section id="wishes">
+    <div class="card">
+      <h3>Ucapan & Doa</h3>
+      <p>Kirimkan doa dan ucapan terbaik untuk kami:</p>
+      <form onsubmit="alert('Terima kasih atas ucapannya!'); return false;">
+        <input type="text" placeholder="Nama Anda" required>
+        <textarea placeholder="Tulis ucapan..." required></textarea>
+        <button type="submit" class="submit">Kirim</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Fulan & Fulanah Wedding | Dibuat dengan ❤️
+  </footer>
+
+  <script>
+    function showPage(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
