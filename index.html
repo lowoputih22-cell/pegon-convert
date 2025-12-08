@@ -213,20 +213,32 @@ async function loadArabicDictionary() {
     window.arabDictLoaded = true;
   }
 }
+// Cache untuk menyimpan hasil deteksi arab
+let arabCache = {};
 
 
 /* ====== Deteksi apakah kata ada di kamus (langsung atau fuzzy) ====== */
 async function detectArabicWord(word) {
   if (!word) return null;
 
+  // 1. CEK CACHE
+  if (arabCache[word] !== undefined) {
+    return arabCache[word]; 
+    // catatan: ini bisa return null jika memang tidak ada di kamus
+  }
+
+  // 2. LOAD KAMUS (sekali saja)
   await loadArabicDictionary();
 
   const norm = normalizeArabicLatin(word);
 
-  // 1) cek exact match
-  if (window.arabDict[norm]) return window.arabDict[norm];
+  // 3. EXACT MATCH
+  if (window.arabDict[norm]) {
+    arabCache[word] = window.arabDict[norm];  // SIMPAN di cache
+    return window.arabDict[norm];
+  }
 
-  // 2) fuzzy match
+  // 4. FUZZY MATCH
   let best = null;
   let bestScore = Infinity;
 
@@ -240,10 +252,16 @@ async function detectArabicWord(word) {
 
   // threshold fuzzy: ≤ 40% panjang kata
   const maxDist = Math.floor(norm.length * 0.4);
-  if (bestScore <= maxDist) return window.arabDict[best];
+  if (bestScore <= maxDist) {
+    arabCache[word] = window.arabDict[best];  // SIMPAN hasil fuzzy
+    return window.arabDict[best];
+  }
 
+  // 5. JIKA TIDAK KETEMU
+  arabCache[word] = null; // simpan juga supaya tidak dihitung ulang
   return null;
 }
+
 
 
 /* ====== Utility tanda baca & wrapping ====== */
