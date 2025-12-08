@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -210,11 +208,55 @@ async function loadArabicDictionary() {
   if (!window.arabDictLoaded) {
     const response = await fetch("arab-dict.json");
     window.arabDict = await response.json();
+
+    // === Buat PREFIX INDEX ===
+    window.arabPrefixIndex = {}; // { "a": [...], "b": [...], ... }
+
+    for (let key in window.arabDict) {
+      const prefix = key[0]; // huruf depan
+      if (!window.arabPrefixIndex[prefix]) {
+        window.arabPrefixIndex[prefix] = [];
+      }
+      window.arabPrefixIndex[prefix].push(key);
+    }
+
     window.arabDictLoaded = true;
   }
 }
+
 // Cache untuk menyimpan hasil deteksi arab
 let arabCache = {};
+
+function vowelCount(s) {
+  return (s.match(/[aeiou]/g) || []).length;
+}
+
+function consonantCount(s) {
+  return (s.match(/[^aeiou]/g) || []).length;
+}
+
+// Hitung skor kesamaan huruf (semakin kecil semakin mirip)
+function similarityScore(a, b) {
+  let score = 0;
+
+  // 1. perbedaan panjang
+  score += Math.abs(a.length - b.length) * 0.5;
+
+  // 2. perbedaan jumlah vokal
+  score += Math.abs(vowelCount(a) - vowelCount(b)) * 1.2;
+
+  // 3. perbedaan jumlah konsonan
+  score += Math.abs(consonantCount(a) - consonantCount(b)) * 0.3;
+
+  // 4. bonus: jika keduanya mengandung pola Arab (kh, gh, sy, dz)
+  const arabPatterns = ['kh', 'gh', 'sy', 'sh', 'dz', 'ts'];
+  for (let p of arabPatterns) {
+    if (a.includes(p) && !b.includes(p)) score += 1.5;
+    if (!a.includes(p) && b.includes(p)) score += 1.5;
+  }
+
+  return score;
+}
 
 
 /* ====== Deteksi apakah kata ada di kamus (langsung atau fuzzy) ====== */
@@ -238,24 +280,34 @@ async function detectArabicWord(word) {
     return window.arabDict[norm];
   }
 
-  // 4. FUZZY MATCH
-  let best = null;
-  let bestScore = Infinity;
+// 4. FUZZY MATCH
+const first = norm[0];
+const candidates = window.arabPrefixIndex[first] || [];
 
-  for (let key in window.arabDict) {
-    const dist = levenshtein(norm, key);
-    if (dist < bestScore) {
-      bestScore = dist;
-      best = key;
-    }
+let best = null;
+let bestScore = Infinity;
+
+for (let key of candidates) {
+  const dist = levenshtein(norm, key);
+  const sim = similarityScore(norm, key);
+
+  // skor akhir: gabungan
+  const score = dist * 1.5 + sim;
+
+  if (score < bestScore) {
+    bestScore = score;
+    best = key;
   }
+}
+
 
   // threshold fuzzy: ≤ 40% panjang kata
-  const maxDist = Math.floor(norm.length * 0.4);
-  if (bestScore <= maxDist) {
-    arabCache[word] = window.arabDict[best];  // SIMPAN hasil fuzzy
+const threshold = norm.length * 2.5; 
+if (bestScore <= threshold) {
+    arabCache[word] = window.arabDict[best];
     return window.arabDict[best];
-  }
+}
+
 
   // 5. JIKA TIDAK KETEMU
   arabCache[word] = null; // simpan juga supaya tidak dihitung ulang
