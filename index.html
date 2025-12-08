@@ -320,6 +320,31 @@ function weightedScore(a, b) {
   return score;
 }
 
+const arabPhrases = {
+  "bismillahirrahmanirrahim": "بسم الله الرحمن الرحيم",
+  "assalamualaikum": "السلام عليكم",
+  "warahmatullahiwabarakatuh": "ورحمة الله وبركاته",
+  "alhamdulillahirabbilalamin": "الحمد لله رب العالمين",
+  "insyaallah": "إن شاء الله",
+  "inshaallah": "إن شاء الله",
+  "masyaallah": "ما شاء الله",
+  "salam": "سلام"
+};
+function normalizePhrase(s) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z]/g, "")           // hilangkan angka/tanda baca
+    .replace(/aa+/g, "a")
+    .replace(/ii+/g, "i")
+    .replace(/uu+/g, "u")
+    .replace(/sy/g, "sy")
+    .replace(/sh/g, "sy")
+    .replace(/kh/g, "kh")
+    .replace(/gh/g, "gh")
+    .replace(/ts/g, "ts")
+    .replace(/dz/g, "dz");
+}
+
 
 /* ====== Deteksi apakah kata ada di kamus (langsung atau fuzzy) ====== */
 async function detectArabicWord(word) {
@@ -478,47 +503,91 @@ function convertWordToPegonSimple(word){
   }
   return hasil;
 }
+function detectArabicPhrase(raw) {
+  let n = normalizePhrase(raw);
+
+  let best = null;
+  let bestScore = Infinity;
+
+  for (let key in arabPhrases) {
+    const score = weightedScore(n, key);
+    if (score < bestScore) {
+      bestScore = score;
+      best = key;
+    }
+  }
+
+  // threshold phrase lebih longgar
+  if (bestScore <= n.length * 3) {
+    return arabPhrases[best];
+  }
+
+  return null;
+}
 
 /* ====== Fungsi utama: convertToPegon (async agar bisa menunggu detektor) ====== */
 async function convertToPegon(teks) {
-  let parts = teks.split(/(\s+)/);
+  let parts = teks.split(/(\s+)/); 
   let hasil = "";
 
   for (let part of parts) {
-    if (/^\s+$/.test(part)) { hasil += part; continue; }
 
+    // jika spasi -> lanjut
+    if (/^\s+$/.test(part)) { 
+      hasil += part; 
+      continue; 
+    }
+
+    // ambil kata tanpa tanda baca
     let raw = stripPunc(part);
     let lower = raw.toLowerCase();
 
-    // 1) coba deteksi kata Arab (menggunakan kamus + fuzzy)
-    let arabDetected = await detectArabicWord(lower); // sync karena kamus embed
+    /* =====================================================
+       0. AUTO PHRASE DETECTION (penambahan di Step 4)
+       ===================================================== */
+    let phrase = detectArabicPhrase(raw);
+    if (phrase) {
+      hasil += wrapWithPunct(part, phrase);
+      continue; // langsung lanjut ke kata berikutnya
+    }
 
+    /* =====================================================
+       1. DETEKSI KATA ARAB BIASA (KAMUS  + FUZZY + AI)
+       ===================================================== */
+    let arabDetected = await detectArabicWord(lower);
     if (arabDetected) {
-      // wrap with punctuation dari original (contoh: "muhammad?" => "محمد؟")
       hasil += wrapWithPunct(part, arabDetected);
       continue;
     }
 
-    // 2) override kamus manual (jika ada) — menggunakan window.arabDict keys kalau diperlukan
+    /* =====================================================
+       2. OVERRIDE MANUAL (jika user punya kamus sendiri)
+       ===================================================== */
     if (window.arabOverride && window.arabOverride[lower]) {
       hasil += wrapWithPunct(part, window.arabOverride[lower]);
       continue;
     }
 
-    // 3) angka handling
+    /* =====================================================
+       3. ANGKA → ARAB-INDIC
+       ===================================================== */
     if (/^\d+$/.test(raw)) {
-      hasil += wrapWithPunct(part,
-        raw.split('').map(ch => angkaMap[ch] || ch).join('')
+      hasil += wrapWithPunct(
+        part,
+        raw.split("").map(ch => angkaMap[ch] || ch).join("")
       );
       continue;
     }
 
-    // 4) fallback: konversi Pegon biasa
+    /* =====================================================
+       4. KONVERSI PEGON NORMAL (fallback)
+       ===================================================== */
     hasil += wrapWithPunct(part, convertWordToPegonSimple(lower));
   }
 
   return hasil;
 }
+
 
 /* ====== fungsi tombol, copy, download (dipertahankan) ====== */
 function clearText(){
