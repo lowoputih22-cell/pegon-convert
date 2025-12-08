@@ -258,6 +258,68 @@ function similarityScore(a, b) {
   return score;
 }
 
+function letterSimilarity(a, b) {
+  // peta kemiripan huruf-huruf Arab-Latin
+  const groups = [
+    ["a", "aa"],
+    ["u", "o", "oo"],
+    ["i", "e"],
+    ["h", "kh"],
+    ["s", "sy", "sh"],
+    ["d", "dz"],
+    ["t", "ts"],
+    ["g", "gh"],
+    ["z", "zh"]
+  ];
+
+  // cari apakah keduanya masuk group yg sama
+  for (let grp of groups) {
+    if (grp.includes(a) && grp.includes(b)) {
+      return 0.7; // huruf mirip → skor rendah
+    }
+  }
+
+  // default: tidak mirip
+  return 1.4;
+}
+function syllableScore(a, b) {
+  const patterns = [
+    "rah", "rahm", "rhm",
+    "mhm", "mhmmd", "mhmd",
+    "fat", "fatm", "fath",
+    "aisy", "aish", "syk", "sykr", "shkr",
+    "allh", "all", "alhmd"
+  ];
+
+  let score = 0;
+
+  for (let p of patterns) {
+    if (a.includes(p) && b.includes(p)) {
+      score -= 2; // lebih cocok → kurangi score
+    }
+  }
+
+  return score;
+}
+function weightedScore(a, b) {
+  let score = 0;
+
+  // skor dari levenshtein
+  const dist = levenshtein(a, b);
+  score += dist * 1.2;
+
+  // hitung huruf per huruf berdasarkan kemiripan
+  const minLen = Math.min(a.length, b.length);
+  for (let i = 0; i < minLen; i++) {
+    score += letterSimilarity(a[i], b[i]);
+  }
+
+  // suku kata (bonus untuk pola Arab)
+  score += syllableScore(a, b);
+
+  return score;
+}
+
 
 /* ====== Deteksi apakah kata ada di kamus (langsung atau fuzzy) ====== */
 async function detectArabicWord(word) {
@@ -288,11 +350,7 @@ let best = null;
 let bestScore = Infinity;
 
 for (let key of candidates) {
-  const dist = levenshtein(norm, key);
-  const sim = similarityScore(norm, key);
-
-  // skor akhir: gabungan
-  const score = dist * 1.5 + sim;
+const score = weightedScore(norm, key);
 
   if (score < bestScore) {
     bestScore = score;
