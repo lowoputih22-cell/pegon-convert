@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pegon_Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+  body { font-family: 'Inter', sans-serif; }
+
+  /* Efek glow tombol GOLD */
+  .gold-glow:hover {
+    box-shadow: 0 0 0px rgba(0,0,0,0), 
+                0 8px 30px rgba(202,138,4,0.35);
+  }
+
+  /* Efek glow tombol HIJAU */
+  .green-glow:hover {
+    box-shadow: 0 0 0px rgba(0,0,0,0), 
+                0 8px 30px rgba(20,83,45,0.35);
+  }
+</style>
+  <style>
+  .toast-show {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
+</style>
+  <style>
+  @keyframes fadeInScale {
+    from { opacity:0; transform: scale(.95); }
+    to { opacity:1; transform: scale(1); }
+  }
+  .animate-fade-in {
+    animation: fadeInScale .2s ease-out;
+  }
+</style>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center px-4">
+
+  <main class="w-full max-w-3xl bg-white shadow-2xl rounded-3xl p-10 border border-gray-100">
+
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-green-900 tracking-tight">
+        Pegon Converter 
+      </h1>
+      <p class="text-sm text-gray-500 mt-2 tracking-wide">
+        PPDA
+      </p>
+      <div class="h-[3px] w-16 bg-yellow-500 mx-auto mt-4 rounded-full"></div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="mb-6">
+      <label class="text-gray-700 font-semibold text-sm mb-2 block">
+        📝 Teks Latin
+      </label>
+      <textarea
+        id="latinInput"
+        rows="7"
+        placeholder="Masukan teks di sini..."
+        class="w-full p-4 rounded-2xl border border-gray-200 
+               focus:ring-2 focus:ring-green-800 focus:outline-none 
+               resize-none text-gray-700 shadow-inner"></textarea>
+    </div>
+
+    <!-- BUTTON AREA -->
+    <div class="flex gap-4 mb-8">
+
+      <!-- BUTTON KONVERSI -->
+      <button
+        onclick="convert()"
+        class="flex-1 bg-green-900 text-white font-semibold py-3 rounded-2xl 
+       transition-all duration-200 ease-out
+       hover:bg-green-800 hover:-translate-y-[1px]
+       active:scale-95 shadow-lg green-glow">
+        Konversi
+        <div class="text-xs text-yellow-400 mt-1">Shift + Enter</div>
+      </button>
+
+      <!-- BUTTON CLEAR -->
+      <button
+        onclick="clearText()"
+        class="px-6 bg-yellow-500 text-white font-semibold rounded-2xl 
+       transition-all duration-200 ease-out
+       hover:bg-yellow-400 hover:-translate-y-[1px]
+       active:scale-95 shadow-lg gold-glow">
+        Clear
+      </button>
+
+    </div>
+
+    <!-- OUTPUT -->
+    <div>
+      <h2 class="text-gray-700 font-semibold text-sm mb-2">
+        📜 Hasil Pegon
+      </h2>
+
+      <div
+        id="pegonOutput"
+        class="bg-white p-5 rounded-2xl border border-gray-200 
+               text-2xl text-right leading-loose min-h-[140px] shadow-inner">
+      </div>
+      
+      <!-- BUTTON COPY & DOWNLOAD -->
+<div class="flex gap-4 mt-4">
+
+  <!-- TOMBOL COPY -->
+  <button
+    onclick="copyPegon()"
+    class="flex-1 bg-green-900 text-white font-semibold py-2.5 rounded-xl
+           hover:bg-green-800 transition shadow-lg">
+    📋 Copy
+  </button>
+
+  <!-- TOMBOL DOWNLOAD -->
+<button
+  onclick="openDownloadModal()"
+  class="flex-1 bg-yellow-500 text-white font-semibold py-2.5 rounded-xl
+         hover:bg-yellow-400 transition shadow-lg">
+  ⬇️ Download
+</button>
+
+</div>
+      
+    </div>
+<!-- FOOTER / POWERED BY -->
+<div class="mt-10 text-center text-[11px] text-gray-400 tracking-wide">
+  ©Powered by <span class="text-green-900 font-semibold">PP Daruttauhid Al Alawi</span>
+  <div class="mt-1 text-[10px] text-gray-300">
+  Version 5.11
+  </div>
+</div>
+  </main>
+
+<script>
+/* ===============================
+   HURUF PEGON
+   =============================== */
+const pegonMap = {
+  ng: 'ڠ', ny: 'ڽ', sy: 'ش', kh: 'خ', sh: 'ش', ch: 'چ',
+  a: 'ا', i: 'ي', u: 'و', e: 'ٓ', o: 'و',
+  b: 'ب', c: 'چ', d: 'د', f: 'ف', g: 'ڮ', h: 'ه',
+  j: 'ج', k: 'ك', l: 'ل', m: 'م', n: 'ن',
+  p: 'ف', q: 'ق', r: 'ر', s: 'س', t: 'ت',
+  v: 'ڤ', w: 'و', x: 'خ', y: 'ي', z: 'ز'
+};
+
+const awalanVokal = {
+  a:'أ', i:'إي', u:'أو', o:'أو', e:'آ'
+};
+
+const angkaMap = { '0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩' };
+
+const arabOverride = {
+  // ======================
+  // A
+  // ======================
+  "abdullah": "عبدالله",
+  "adab": "أدب",
+  "adil": "عادل",
+  "adiluhung": "عَديلُهُڠ",
+  "adzab": "عذاب",
+  "adzim": "عظيم",
+  "afdol": "أفضل","afdhol": "أفضل",
+  "afiat": "عافية","afiah": "عافية",
+  "afwan": "عفوا",
+  "ahsan": "أحسن",
+  "ahad": "أحد", 
+  "ahli": "أهل", 
+  "ahmad":"أحمد", 
+  "akhbar": "أخبار",
+  "akhiran": "أخيرا",
+  "akhwat": "أخوات",
+  "akhirat": "آخرة",
+  "akhlak": "أخلاق",
+  "akidah": "عقيدة",
+  "akidahnya": "عقيدتپا",
+  "akikah": "عقيقة",
+  "akal": "عقل",
+  "akad": "عقد",
+  "alam": "عالم",
+  "alhamdulillah": "الحمد لله",
+  "allah": "الله",
+  "amanah": "أمانة",
+  "amal": "عمل",
+  "amalannya": "عملنپا",
+  "amin": "آمين",
+  "aminah": "أمينة",
+  "amr": "أمر",
+  "anfal": "أنفال",
+  "anfa'": "أنفع",
+  "arafah": "عرفة",
+  "arif": "عارف",
+  "arwah": "أرواح",
+  "arab": "عراب",
+
+  // ======================
+  // B
+  // ======================
+  "bait": "بيت",
+  "baitullah": "بيت الله",
+  "baik": "بائيك",
+  "baligh": "بالغ",
+  "barokah": "بركة",
+  "barzakh": "برزخ",
+  "bashirah": "بصيرة",
+  "batil": "باطل",
+  "bawaan": "بواءن",
+  "beliau": "بٓلياو",
+  "berakhlak": "بٓرأخلاق",
+  "berdoa": "بٓردعاء","berdo'a": "بٓردعاء",
+  "bergaul": "بٓرڮاؤل",
+  "berharakat": "بٓرحركة",
+  "berhikmah": "بٓرحكمة",
+  "berhijrah": "بٓرهجرة",
+  "berijtihad": "بٓرإجتهاد",
+  "beristighfar": "بٓرإستغفار",
+  "beriman": "بٓرإيمان",
+  "berjamaah": "بٓرجماعة",
+  "berjuang": "بٓرجوڠ",
+  "bermakna": "بٓرمعنى",
+  "bermanfaat": "بٓرمنفعة",
+  "bermaulid": "بٓرمولد",
+  "bermazhab": "بٓرمذهب",
+  "berpuasa": "بٓرفواسا",
+  "berqurban": "بٓرقربان",
+  "bersujud": "بٓرسجود",
+  "bertafakur": "بٓرتفكر",
+  "bertauhid": "بٓرتوحيد",
+  "bertawakal": "بٓرتوكل",
+  "bin": "بن",
+  "bismillah": "بسم الله",
+
+  // ======================
+  // C
+  // ======================
+  
+
+  // ======================
+  // D
+  // ======================
+  "da'i": "داعي",
+  "da'wah": "دعوة","dakwah": "دعوة",
+  "dalil": "دليل",
+  "dinar": "دينار",
+  "dirham": "درهم",
+  "diri": "ديري",
+  "dirinya": "ديريپا","diriku": "ديريكو","dirimu": "ديريمو",
+  "dunia": "دنيا",
+  "darurat": "ضرورة",
+  "darussalam": "دار السلام",
+  "dermawan": "درمىوان",
+  "do'a": "دعاء",
+  "dua": "دووا",
+  "dzalim": "ظالم",
+  "dzikir": "ذكر",
+  "dzulhijjah": "ذو الحجة","zulhijjah": "ذو الحجة","dzulhijah": "ذو الحجة","dzulkhijjah": "ذو الحجة",
+  "dzulqa'dah": "ذو القعدة","zulqa'dah": "ذو القعدة","dzulqaidah": "ذو القعدة","dzulqo'dah": "ذو القعدة","zulqo'dah": "ذو القعدة",
+  "kedua": "كٓدووا",
+  "keduanya": "كٓدوواپا",
+
+  // ======================
+  // F
+  // ======================
+  "fadhil": "فضل",
+  "fadhilah": "فضيلة",
+  "fadhilat": "فضيلة",
+  "fadhol": "فضل",
+  "faqih": "فقيه",
+  "fardu": "فرض",
+  "faraidh": "فرائض",
+  "firaun": "فرعون",
+  "fikir": "فكر",
+  "fitnah": "فتنة",
+  "fitrah": "فطرة",
+
+  // ======================
+  // G
+  // ======================
+  "gaul": "ڮاؤل",
+  "ghaflah": "غفلة",
+  "ghafur": "غفور",
+  "gharar": "غرر",
+  "ghaib": "غيب",
+  "ghaibnya": "غيبپا",
+
+  // ======================
+  // H
+  // ======================
+  "habib": "حبيب",
+  "hadir": "حاضر", 
+  "hafal": "حفظ",
+  "hafidz": "حافظ",
+  "haji": "حج",
+  "hak": "حق",
+  "hakikat": "حقيقة",
+  "hakim": "حكيم",
+  "halal": "حلال",
+  "halim": "حليم",
+  "hamzah": "همزة",
+  "haram": "حرم",
+  "harakat": "حركة",
+  "harakatnya": "حركاتپا",
+  "hidayah": "هداية",
+  "hijrah": "هجرة",
+  "hikmah": "حكمة",
+  "hilal": "هلال",
+  "hurairah": "هريرة",
+  "huruf": "حرف",
+  "hukum": "حكم",
+  "hasanah": "حسنة",
+  "hasanat": "حسنات",
+  "hasud": "حسد",
+  "hayat": "حياة",
+
+  // ======================
+  // I
+  // ======================
+  "ialah": "إيالاه",
+  "ibadah": "عبادة",
+  "iblis": "إبليس",
+  "idarah": "إدارة",
+  "iftar": "إفطار",
+  "ihsan": "إحسان",
+  "ihram": "إحرام",
+  "ijtihad": "اجتهاد",
+  "ikhlas": "إخلاص",
+  "ikhtiar": "اختيار",
+  "ikhtilaf": "اختلاف",
+  "ikhwan": "إخوان",
+  "ilahi": "إلهي",
+  "ilah": "إله",
+  "ilmu": "علم",
+  "imam": "إمام",
+  "iman": "إيمان",
+  "infaq": "إنفاق",
+  "insaf": "إنصاف",
+  "insan": "إنسان",
+  "insya": "إن شاء",
+  "iqra": "اقرأ","iqra'": "اقرأ",
+  "irsyad": "إرشاد",
+  "islam": "إسلام",
+  "isra": "إسراء","isra'": "إسراء",
+  "istighfar": "استغفار",
+  "istiqlal": "استقلال",
+
+  // ======================
+  // J
+  // ======================
+  "jahannam": "جهنم",
+  "jahil": "جاهل",
+  "jahiliyah": "جاهلية",
+  "jamaah": "جماعة","jama'ah": "جماعة",
+  "jannah": "جنة",
+  "jarh": "جرح",
+  "jazirah": "جزيرة",
+  "jin": "جن",
+  "jumat": "جمعة",
+  "juz": "جزء",
+
+  // ======================
+  // K
+  // ======================
+  "kafir": "كافر",
+  "kalam": "كلام",
+  "karamah": "كرامة",
+  "karim": "كريم",
+  "kaum": "قوم",
+  "khalifah": "خليفة",
+  "khalid": "خالِد",
+  "khatib": "خطيب",
+  "khilafah": "خلافة",
+  "khutbah": "خطبة",
+  "kiamat": "قيامة",
+  "kitab": "كتاب",
+  "khaibar": "خيبر",
+  "khoir": "خير",
+  "khoirunnas": "خير الناس",
+  "lafadz": "لفظ",
+  "lain": "لائين",
+  "lainnya": "لائينپا",
+
+  // ======================
+  // L
+  // ======================
+  "lahiriah": "ظاهرية",
+  "lailah": "ليلة",
+  "lailatul": "ليلة ال",
+  "lisan": "لسان",
+
+  // ======================
+  // M
+  // ======================
+  "madinah": "مدينة",
+  "madrasah": "مدرسة",
+  "mahasiswa": "طالب",
+  "mahasiswi": "طالبة",
+  "mahabbah": "محبة",
+  "mahfum": "مفهوم",
+  "mahluk": "مخلوق",
+  "makah": "مكة","makkah": "مكة","mekah": "مكة","mekkah": "مكة",
+  "makna": "معنى",
+  "makrifat": "معرفة",
+  "makruh": "مكروه",
+  "malaikat": "ملائكة",
+  "manfaat": "منفعة",
+  "maqam": "مقام",
+  "marah": "غضب",
+  "mensyaratkan": "مٓنشراطكان",
+  "mencintai": "مٓنچينتائي",
+  "mengetahui": "مٓڠٓتاهوئي",
+  "melainkan": "مٓلائينكان",
+  "melampaui": "مٓلامفاوئي",
+  "melampauinya": "مٓلامفوئيپا",
+  "mempunyai": "مٓمفوپائي",
+  "menikah": "مٓنيكاح",
+  "menikahi": "مٓنيكاحي",
+  "menggauli": "مٓڠڮاؤلي",
+  "mereka": "مٓريكا",
+  "maulid": "مولد",
+  "maulaya": "مولاي",
+  "mihrab": "محراب",
+  "mimbar": "منبر",
+  "miraj": "معراج",
+  "mubah": "مباح",
+  "muamalah": "معاملة",
+  "muhammad": "محمد",
+  "mukmin": "مؤمن",
+  "mu'min": "مؤمن",
+  "mu'minin": "مؤمنين",
+  "mukminin": "مؤمنين",
+  "muslim": "مسلم",
+  "muslimin": "مسلمين","muslimun": "مسلمون",
+  "musibah": "مصيبة",
+  "musyawarah": "مشاورة",
+  "mutawatir": "متواتر",
+  "mustahil": "مستحيل",
+  "mustajab": "مستجاب",
+  "mursal": "مرسل",
+  "muqaddimah": "مقدمة",
+
+  // ======================
+  // N
+  // ======================
+  "nabi": "نبي",
+  "najah": "نجاح",
+  "najis": "نجس",
+  "nafs": "نفس",
+  "naqis": "ناقص",
+  "naqli": "نقلي",
+  "nasab": "نسب",
+  "nasihat": "نصيحة",
+  "nasuha": "ناصحة",
+  "naudzubillah": "نعوذ بالله",
+  "nikah": "نكاح",
+  "nikmat": "نعمة",
+  "niat": "نية",
+  "naskah": "نسخة",
+
+  // ======================
+  // O
+  // ======================
+  "oleh": "أولٓيه",
+
+  // ======================
+  // P
+  // ======================
+  
+  "pergaulan": "فٓرڮاؤلان",
+
+  // ======================
+  // Q
+  // ======================
+  "qadar": "قدر",
+  "qadha": "قضاء",
+  "qalb": "قلب",
+  "qiraah": "قراءة",
+  "qiroah": "قراءة",
+  "qurban": "قربان",
+  "quraisy": "قريش",
+  "qiyam": "قيام",
+  "qiyamul": "قيام ال",
+
+  // ======================
+  // R
+  // ======================
+  "rahmat": "رحمة",
+  "rahim": "رحيم",
+  "rakaat": "ركعة",
+  "ramadan": "رمضان",
+  "rasul": "رسول",
+  "rasulullah": "رسول الله",
+  "ridha": "ريضا",
+  "ridho": "ريضا",
+  "riba": "ربا",
+  "ridwan": "رضوان",
+  "rizki": "رزق",
+  "rizqi": "رزق",
+  "ruh": "روح",
+  "riya": "رياء",
+  "rukun": "ركن",
+
+  // ======================
+  // S
+  // ======================
+  "sabar": "صبر",
+  "sadiq": "صادق",
+  "sajadah": "سجادة",
+  "sakinah": "سكينة",
+  "salam": "سلام",
+  "salaf": "سلف",
+  "salafus": "سلف ال",
+  "salat": "صلاة",
+  "sampai": "سامفائي",
+  "saw": "ﷺ",
+  "sebagai": "سٓباڮائي",
+  "sedekah": "صدقة",
+  "seorang": "سٓؤراڠ",
+  "seseorang": "سٓسٓؤراڠ",
+  "selain": "سٓلائين",
+  "shalat": "صلاة",
+  "sholat": "صلاة",
+  "sholatlah": "صلاة",
+  "sholeh": "صالح",
+  "sifat": "صفة",
+  "syafaat": "شفاعة",
+  "syafaatnya": "شفاعاتپا",
+  "syams": "شمس",
+  "syamsul": "شمس ال",
+  "syariat": "شريعة",
+  "syarat": "شرط",
+  "syaratkan": "شراطكان",
+  "syekh": "شيخ",
+  "syirkah": "شركة",
+  "syirik": "شرك",
+  "syukur": "شكر",
+  "sujud": "سجود",
+  "sami": "سميع",
+  "sami'allah": "سمع الله",
+  "sawab": "ثواب",
+
+  // ======================
+  // T
+  // ======================
+  "taala": "تعالى",
+  "tadabbur": "تدبر",
+  "tafsir": "تفسير",
+  "taharah": "طهارة",
+  "tahlil": "تهليل",
+  "tahmid": "تحميد",
+  "takbir": "تكبير",
+  "takdir": "تقدير",
+  "tamtsil": "تمثيل",
+  "tasbih": "تسبيح",
+  "tasawuf": "تصوف",
+  "tasdik": "تصديق",
+  "taslim": "تسليم",
+  "taubat": "توبة",
+  "tauhid": "توحيد",
+  "tauqif": "توقيف",
+  "tayamum": "تيمم",
+  "tarawih": "تراويح",
+  "tarbiyah": "تربية",
+  "tartil": "ترتيل",
+  "tawaf": "طواف",
+  "thariqah": "طريقة",
+  "thawaf": "طواف",
+  "thaharah": "طهارة",
+  "thalib": "طالب","tholib": "طالب","tolib": "طالب",
+
+  // ======================
+  // U
+  // ======================
+  "ukhuwah": "أخوة",
+  "ulama": "علماء","ulama'": "علماء",
+  "ulil": "أولي ال",
+  "umrah": "عمرة",
+  "ummat": "أمة",
+  "ummu": "ّأم",
+  "ushalli": "أصلي",
+  "ustaz": "أستاذ",
+  "utang": "دين",
+  "utsman": "عثمان",
+  "usman": "عثمان",
+  "udzur": "عذر",
+  "ujub": "عجب",
+
+  // ======================
+  // W
+  // ======================
+  "wahyu": "وحي",
+  "wali": "ولي",
+  "waliyyullah": "ولي الله",
+  "wakaf": "وقف",
+  "waktu": "وقت",
+  "wirid": "ورد",
+  "wudhu": "وضوء","wudhu'": "وضوء",
+  "wala": "ولا",
+
+  // ======================
+  // Y
+  // ======================
+  "yaitu": "ياإيتو",
+  "yaqin": "يقين",
+  "yaum": "يوم",
+  "yaumul": "يوم ال",
+
+  // ======================
+  // Z
+  // ======================
+  "zaid": "زيد",
+  "zakat": "زكاة",
+  "zalim": "ظالم",
+  "zamzam": "زمزم",
+  "zuhur": "ظهر","dzuhur": "ظهر",
+  "dzunub": "ذنوب",
+
+      // variasi kata sedekah / shodaqoh
+      "shodaqoh": "صدقة","shodaqah":"صدقة","sodaqoh":"صدقة","sodaqah":"صدقة","sadaqah":"صدقة","sedekah":"صدقة",
+      // tambahan contoh lain (bisa dikembangkan)
+      "syafaatnya":"شفاعاتپا","syafaat":"شفاعة","bersyafaat":"بٓرشفاعة",
+  /* ============================
+   DAFTAR ULAMA (A–Z)
+   ============================ */
+
+  "abuhanifah": "أبو حنيفة","abu hanifah": "أبو حنيفة",
+  "abdul qadir": "عبد القادر",
+  "ahmad bin hanbal": "أحمد بن حنبل",
+  "albaihaqi": "البيهقي","al baihaqi": "البيهقي",
+  "albarbahari": "الباربهاري","al barbahari": "الباربهاري",
+  "albusiri": "البوصيري","al busiri": "البوصيري",
+  "albukhari": "البخاري","al bukhari": "البخاري","al bukhori": "البخاري","albukhori": "البخاري",
+  "albulqini": "البلقيني",
+  "albarzanji": "البرزنجي",
+  "albaydawi": "البيضاوي",
+  "albaghdadi": "البغدادي",
+  "alqurtubi": "القرطبي",
+  "alghazali": "الغزالي","al ghazali": "الغزالي","al-ghazali": "الغزالي",
+  "alhakim": "الحاكم",
+  "alhallaj": "الحلاج","al hallaj": "الحلاج","al-hallaj": "الحلاج",
+  "alhindi": "الهندي","al hindi": "الهندي","al-hindi": "الهندي",
+  "alhujwiri": "الهجويري","al hujwiri": "الهجويري",
+  "ali": "علي",
+  "ali bin abi thalib": "علي بن أبي طالب",
+  "ali bin almadini": "علي بن المديني",
+  "bukhari": "بخاري","bukhori": "بخاري",
+  "imam ghazali": "الإمام الغزالي","imam alghazali": "الإمام الغزالي","imam al-ghazali": "الإمام الغزالي","imam ghozali": "الإمام الغزالي","imam alghozali": "الإمام الغزالي","imam al-ghozali": "الإمام الغزالي",
+  "imam albukhari": "الإمام البخاري","imam al-bukhari": "الإمام البخاري","imam al bukhari": "الإمام البخاري","imam albukhori": "الإمام البخاري","imam al-bukhori": "الإمام البخاري","imam alb ukhari": "الإمام البخاري",
+  "imam muslim": "الإمام مسلم",
+
+  "darimi": "الدارمي","addarimi": "الدارمي","ad-darimi": "الدارمي",
+  "dzahabi": "الذهبي",
+
+  "ghazali": "الغزالي","ghozali":"الغزالي", 
+
+  "alhakim": "الحاكم", "al-hakim": "الحاكم", "al hakim": "الحاكم",
+  "hibban": "ابن حبان","ibnu hibban": "ابن حبان","ibn hibban": "ابن حبان","hiban": "ابن حبان","ibn hiban": "ابن حبان","ibnu hiban": "ابن حبان",
+
+  "ibnabbas": "ابن عباس",
+  "ibnu masud": "ابن مسعود",
+  "ibnu majah": "ابن ماجه",
+  "ibnu jarir": "ابن جرير",
+  "ibnatsir": "ابن الأثير",
+  "ibnaljauzi": "ابن الجوزي",
+  "ibntaimiyah": "ابن تيمية",
+  "ibnqayyim": "ابن القيم",
+  "ibnhajar": "ابن حجر",
+  "ibnmandzur": "ابن منظور",
+  "ibnsyihab": "ابن شهاب",
+  "ibnibnisa": "ابن عيسى",
+  "imamja'far": "الإمام جعفر",
+  "imamjafar": "الإمام جعفر",
+
+  "kaab": "كعب",
+  "khatib": "الخطيب",
+  "khalid": "خالد",
+  "kurtubi": "القرطبي",
+
+  "malik": "مالك",
+  "mawardi": "الماوردي",
+  "maturidi": "الماتريدي",
+  "muwatha": "موطأ",
+  "muhasibi": "المحاسبي",
+  "muzani": "المزني",
+  "mudhar": "مضر",
+  "mujahid": "مجاهد",
+  "makhul": "مكحول",
+  "muslim": "مسلم",
+
+  "nawawi": "النووي",
+  "nasai": "النسائي",
+  "nasa'i": "النسائي",
+  "nafi'": "نافع",
+
+  "qurtubi": "القرطبي",
+  "qadhiiyadh": "القاضي عياض",
+
+  "razi": "الرازي",
+  "ramli": "الرملي","romli": "الرملي",
+  "rafii": "الرافعي","rafi'i": "الرافعي","rofii": "الرافعي","rofi'i": "الرافعي",
+
+  "suyuthi": "السيوطي",
+  "subki": "السبكي",
+  "syafii": "الشافعي",
+  "syafi'i": "الشافعي",
+  "sufyan": "سفيان",
+  "syatibi": "الشاطبي","syathibi": "الشاطبي",
+  "syinqithi": "الشنقيطي",
+  "syaukani": "الشوكاني",
+
+  "tabari": "الطبري",
+  "tirmidzi": "الترمذي",
+  "thabathaba'i": "الطباطبائي",
+
+  "wahidi": "الواحدي",
+  "waki'": "وكيع",
+
+  "yahya": "يحيى",
+  "yaqubi": "اليعقوبي","ya'qubi": "اليعقوبي",
+  "yafi'i": "اليافعي",
+
+  "zahabi": "الذهبي",
+  "zamakhsyari": "الزمخشري","azzamakhsyari": "الزمخشري","az-zamakhsyari": "الزمخشري","al zamakhsyari": "الزمخشري","al-zamakhsyari": "الزمخشري",
+  "zabidi": "الزبيدي",
+  "zuhri": "الزهري"
+};
+
+const akhiranMap = { nya:"پا", mu:"مو", ku:"كو", kah:"كاه", lah:"لاه", pun:"فون" };
+
+/* ===============================
+   DAFTAR DIFTONG KHUSUS
+   =============================== */
+const diftongAIFullWords = [
+  "santai","lalai","ramai","lihai","nilai","pandai",
+  "lantai","rantai","balai","serai","selai","pantai"
+];
+
+const diftongUIWords = ["kui","duit","kuil","kuih"];
+
+/* ===============================
+   UTILITIES
+   =============================== */
+function stripPunc(s){ return s.replace(/^[\W_]+|[\W_]+$/g,''); }
+
+function wrapWithPunct(original, arab){
+  const lead = original.match(/^[\W_]+/) || [''];
+  let punc = original.match(/[\?\!]+$/) || [''];
+
+  // jika ada tanda baca khusus
+  if (punc[0]) {
+    let hasilPunc = "";
+
+    // convert tanda ?
+    if (punc[0].includes("?")) {
+      hasilPunc += "؟";
+    }
+
+    // convert tanda !
+    if (punc[0].includes("!")) {
+      hasilPunc += "!";
+    }
+
+    // letakkan SETELAH teks Arab (kanan)
+    return lead[0] + arab + hasilPunc;
+  }
+
+  // tanda baca lain tetap normal
+  const other = original.match(/[\.\,\:\;]+$/) || [''];
+  return lead[0] + arab + other[0];
+}
+
+/* ===============================
+   KONVERSI TEKS
+   =============================== */
+function convertToPegon(teks) {
+  let parts = teks.split(/(\s+)/);
+  let hasil = "";
+
+  for (let part of parts) {
+    if (/^\s+$/.test(part)) { hasil += part; continue; }
+
+    let raw = stripPunc(part);
+    let lower = raw.toLowerCase();
+    
+    /* ==============================================
+   PATCH PEMISAHAN AWALAN "di" (dikembalikan lagi)
+   ============================================== */
+if (lower.startsWith("di") && lower.length > 2) {
+  let sesudah = lower.slice(2);
+  if (!arabOverride[lower]) {
+    let arabDi = "دي";
+    let arabKata = convertWord(sesudah);
+    hasil += wrapWithPunct(part, arabDi + " " + arabKata);
+    continue;
+  }
+}
+
+
+    // Override kamus
+    if (arabOverride[lower]) {
+      hasil += wrapWithPunct(part, arabOverride[lower]);
+      continue;
+    }
+
+    // Akhiran -nya dll untuk kata Arab ta marbuthah
+    let matchedSuffix = false;
+    for (let suf in akhiranMap) {
+      if (lower.endsWith(suf)) {
+        let dasar = lower.slice(0, -suf.length);
+        if (arabOverride[dasar] && arabOverride[dasar].endsWith("ة")) {
+          let temp = arabOverride[dasar].slice(0,-1) + "ت";
+          hasil += wrapWithPunct(part, temp + akhiranMap[suf]);
+          matchedSuffix = true;
+        }
+      }
+    }
+    if (matchedSuffix) continue;
+
+    // Angka
+    if (/^\d+$/.test(raw)) {
+      hasil += wrapWithPunct(part,
+        raw.split('').map(ch => angkaMap[ch] || ch).join('')
+      );
+      continue;
+    }
+
+    hasil += wrapWithPunct(part, convertWord(lower));
+  }
+
+  return hasil;
+}
+
+function clearText(){
+  document.getElementById("latinInput").value = "";
+  document.getElementById("pegonOutput").innerText = "";
+}
+
+function copyPegon() {
+  const text = document.getElementById("pegonOutput").innerText;
+  const toast = document.getElementById("toast");
+  const toastText = document.getElementById("toastText");
+
+  if (!text) {
+    showToast("⚠️ Tidak ada teks untuk disalin", "bg-red-600");
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  textarea.setSelectionRange(0, 99999);
+
+  try {
+    document.execCommand("copy");
+    showToast("✅ Berhasil disalin!");
+  } catch (err) {
+    showToast("❌ Gagal menyalin", "bg-red-600");
+  }
+
+  document.body.removeChild(textarea);
+}
+function showToast(message, colorClass = "bg-green-900") {
+  const toast = document.getElementById("toast");
+  const toastText = document.getElementById("toastText");
+
+  toast.className = `fixed top-6 right-6 text-white 
+    px-5 py-3 rounded-2xl shadow-2xl 
+    opacity-0 pointer-events-none -translate-y-4 transition-all duration-300 ${colorClass}`;
+
+  toastText.innerText = message;
+
+  setTimeout(() => {
+    toast.classList.add("toast-show");
+  }, 50);
+
+  setTimeout(() => {
+    toast.classList.remove("toast-show");
+  }, 2500);
+}
+function downloadPegon(){
+  const text = document.getElementById("pegonOutput").innerText;
+  if(!text){
+    showToast("⚠️ Tidak ada teks untuk diunduh", "bg-red-600");
+    return;
+  }
+
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  // Buat nama file otomatis
+  const now = new Date();
+  const tanggal = now.toISOString().slice(0,10);
+  const waktu = now.toTimeString().slice(0,8).replace(/:/g, "-");
+  const filename = `pegon-${tanggal}-${waktu}.txt`;
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  showToast("⬇️ File berhasil diunduh");
+}
+/* ===============================
+   KONVERSI PER KATA / INTI LOGIKA
+   =============================== */
+function convertWord(word){
+  if (!word) return "";
+
+  /* ------------------------------------
+     PATCH #1 — SESUAI (pola "uai")
+     ------------------------------------ */
+  if (word.includes("uai")) {
+    // contoh sesuai, berpasuai, ketidaksesuaiannya
+    return convertWord(word.replace(/uai/g,"u_ai_patch"));
+  }
+  if (word.includes("u_ai_patch")) {
+    // konversi: u → و, a → ا, i → ي  => واي
+    return word
+      .replace(/u_ai_patch/g,"و"+"ا"+"ي")
+      .split("")
+      .map(ch => pegonMap[ch] || ch)
+      .join("");
+  }
+
+  /* ------------------------------------
+     PATCH #2 — BUIH (UI di tengah)
+     ------------------------------------ */
+  if (word.startsWith("bui")) {
+    // buih -> بوئيه
+    return "بوئي" + convertWord(word.slice(3));
+  }
+
+  /* ===============================
+     ATURAN AI (akhir kata)
+     =============================== */
+  if (word.endsWith("ai")) {
+    // AI diftong (whole-word)
+    for (let w of diftongAIFullWords) {
+      if (word === w || word.endsWith(w)) {
+        let dasar = word.slice(0,-2);
+        return convertWord(dasar) + "اي"; // diftong
+      }
+    }
+    // AI dua suku
+    let dasar = word.slice(0,-2);
+    return convertWord(dasar) + "ائي";
+  }
+
+  /* ===============================
+     AU
+     =============================== */
+  if (word.includes("au")) {
+    let out=""; let i=0;
+    while (i<word.length) {
+      if (word.slice(i,i+2)==="au"){ out+="او"; i+=2; continue; }
+      let dua = word.slice(i,i+2);
+      if (pegonMap[dua]){ out+=pegonMap[dua]; i+=2; continue; }
+      out += pegonMap[word[i]] || word[i]; i++;
+    }
+    return out;
+  }
+
+  /* ===============================
+     UI (akhir kata)
+     =============================== */
+  if (word.endsWith("ui")) {
+    for (let w of diftongUIWords) {
+      if (word === w || word.endsWith(w)) {
+        let dasar = word.slice(0,-2);
+        return convertWord(dasar) + "وي";
+      }
+    }
+    let dasar = word.slice(0,-2);
+    return convertWord(dasar) + "وئي";
+  }
+
+  /* ===============================
+     IA
+     =============================== */
+  if (word.endsWith("ia")) {
+    if (word==="biaya") return "بيايا";
+    let dasar = word.slice(0,-2);
+    return convertWord(dasar) + "يا";
+  }
+
+  /* ===============================
+     KUE
+     =============================== */
+  if (word === "kue" || word.endsWith("kue")) {
+    let dasar = word.slice(0,-3);
+    return convertWord(dasar) + "كُوئي";
+  }
+
+  /* ===============================
+     EI
+     =============================== */
+  if (word.endsWith("ei")) {
+    let dasar = word.slice(0,-2);
+    return convertWord(dasar) + "ٓئي";
+  }
+
+  /* ===============================
+     UA
+     =============================== */
+  if (word.includes("ua")) {
+    let out=''; let i=0;
+    while (i<word.length){
+      if (word.slice(i,i+2)==='ua'){ out+='وا'; i+=2; continue; }
+      let dua=word.slice(i,i+2);
+      if (pegonMap[dua]){ out+=pegonMap[dua]; i+=2; continue; }
+      out += pegonMap[word[i]] || word[i]; i++;
+    }
+    return out;
+  }
+
+  /* ===============================
+     Default huruf per huruf
+     =============================== */
+  let hasil=""; let i=0;
+  if (/^[aeiou]/.test(word)) { hasil+=awalanVokal[word[0]]; i=1; }
+
+  while (i<word.length){
+    let dua = word.slice(i,i+2).toLowerCase();
+    if (pegonMap[dua]){ hasil+=pegonMap[dua]; i+=2; continue; }
+    hasil += pegonMap[word[i]] || word[i];
+    i++;
+  }
+  return hasil;
+}
+
+/* ===============================
+   BUTTON & SHORTCUT
+   =============================== */
+function convert(){
+  let input = document.getElementById("latinInput").value;
+  document.getElementById("pegonOutput").innerText = convertToPegon(input);
+}
+
+document.addEventListener("keydown", function(e){
+  if (e.shiftKey && e.key === "Enter") {
+    e.preventDefault(); // mencegah tambah baris di textarea
+    convert();
+  }
+});
+function openDownloadModal(){
+  const text = document.getElementById("pegonOutput").innerText;
+  if(!text){
+    showToast("⚠️ Tidak ada teks untuk diunduh", "bg-red-600");
+    return;
+  }
+
+  document.getElementById("downloadModal").classList.remove("hidden");
+
+  // default nama file & format
+  const now = new Date();
+  const tanggal = now.toISOString().slice(0,10);
+  const waktu = now.toTimeString().slice(0,8).replace(/:/g, "-");
+  document.getElementById("fileNameInput").value = `pegon-${tanggal}-${waktu}`;
+}
+
+function closeDownloadModal(){
+  document.getElementById("downloadModal").classList.add("hidden");
+}
+function confirmDownload(){
+  const text = document.getElementById("pegonOutput").innerText;
+  const nameInput = document.getElementById("fileNameInput").value.trim();
+  const type = document.getElementById("fileTypeSelect").value;
+
+  const filename = nameInput ? `${nameInput}.${type}` : `hasil-pegon.${type}`;
+
+  if(type === "pdf"){
+    generatePDF(text, filename);
+    closeDownloadModal();
+    showToast("⬇️ PDF berhasil dibuat");
+    return;
+  }
+
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+  closeDownloadModal();
+  showToast("⬇️ File berhasil diunduh");
+}
+function generatePDF(text, filename) {
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head>
+        <title>${filename}</title>
+      </head>
+      <body style="font-family: serif; white-space: pre-wrap;">
+        ${text.replace(/\n/g, '<br>')}
+      </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+}
+</script>
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed top-6 right-6 bg-green-900 text-white 
+     px-5 py-3 rounded-2xl shadow-2xl opacity-0 pointer-events-none 
+     -translate-y-4 transition-all duration-300">
+  <span id="toastText">✅ Copied!</span>
+</div>
+<!-- DOWNLOAD MODAL -->
+<div id="downloadModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-md animate-fade-in">
+
+    <h3 class="text-xl font-bold mb-4 text-gray-800">Download File</h3>
+
+    <!-- Nama File -->
+    <label class="text-sm font-semibold text-gray-600">Nama File</label>
+    <input
+      id="fileNameInput"
+      type="text"
+      class="w-full mt-1 mb-4 p-3 border rounded-xl focus:ring-2 focus:ring-green-800 outline-none"
+      placeholder="contoh: hasil-pegon"
+    >
+
+    <!-- Jenis File -->
+    <label class="text-sm font-semibold text-gray-600">Jenis File</label>
+<select
+  id="fileTypeSelect"
+  class="w-full mt-1 mb-5 p-3 border rounded-xl focus:ring-2 focus:ring-green-800 outline-none">
+  <option value="txt">.txt (Text)</option>
+  <option value="doc">.doc (Word)</option>
+  <option value="pdf">.pdf (PDF)</option>
+</select>
+
+    <!-- Tombol -->
+    <div class="flex gap-3">
+      <button
+        onclick="closeDownloadModal()"
+        class="flex-1 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition font-semibold">
+        Batal
+      </button>
+
+      <button
+        onclick="confirmDownload()"
+        class="flex-1 py-2 rounded-xl bg-green-900 text-white hover:bg-green-800 transition font-semibold">
+        Download
+      </button>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
