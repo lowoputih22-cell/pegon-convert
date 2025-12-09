@@ -779,11 +779,11 @@ let extraOverride = {};
 
 async function loadExtraOverride() {
   try {
-    extraOverride = await fetch("./extra_override.json")
+    extraOverride = await fetch("https://raw.githubusercontent.com/lowoputih22-cell/pegon-convert/main/extra_override.json")
       .then(r => r.json());
-    console.log("Extra override loaded");
+    console.log("Extra override loaded from GitHub RAW");
   } catch (e) {
-    console.warn("Tidak menemukan extra_override.json");
+    console.warn("Tidak menemukan extra_override.json", e);
   }
 }
 
@@ -1182,6 +1182,7 @@ function generatePDF(text, filename) {
 </div>
 </body>
 </html>
+
 
 
 
