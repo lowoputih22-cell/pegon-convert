@@ -803,4 +803,95 @@
   "zamakhsyari": "الزمخشري","azzamakhsyari": "الزمخشري","az-zamakhsyari": "الزمخشري","al zamakhsyari": "الزمخشري","al-zamakhsyari": "الزمخشري",
   "zabidi": "الزبيدي",
   "zuhri": "الزهري"
+
+    "nahwu": "نحو",
+  "i'lal": "اعلال","ilal": "اعلال",
+  "sharaf": "صرف","shorof": "صرف",
+  "balaghoh": "بلاغة",
+  "maani": "معاني",
+  "bayan": "بيان",
+  "badi": "بديع",
+  "lughoh": "لغة",
+  "qowaidulfiqh": "قواعد الفقه","qowaidul fiqh": "قواعد الفقه",
+  "qowaidfiqhiyah": "قواعد فقهية","qowaidul fiqhiyah": "قواعد فقهية","qowaid fiqhiyah": "قواعد فقهية",
+
+  "fiqh": "فقه",
+  "fiqihibadah": "فقه العبادة", "fiqih ibadah": "فقه العبادة",
+  "fiqhmuamalah": "فقه المعاملة","fiqh muamalah": "فقه المعاملة","fiqhmu'amalah": "فقه المعاملة","fiqh mu'amalah": "فقه المعاملة",
+  "fiqhjinayah": "فقه الجنايات","fiqh jinayah": "فقه الجنايات",
+  "fiqhmunakahat": "فقه المناكحات", "fiqh munakahat": "فقه المناكحات", "fiqhmunakahah": "فقه المناكحة", "fiqh munakahah": "فقه المناكحة",
+  "fiqhsiyasah": "فقه السياسة",
+  "fiqhqadha": "فقه القضاء",
+
+  "ushulfiqh": "أصول الفقه","ushul fiqh": "أصول الفقه",
+  "ushuluddin": "أصول الدين",
+  "aqidah": "عقيدة",
+  "tauhid": "توحيد",
+  "ilmutauhid": "علم التوحيد", "ilmu tauhid": "علم التوحيد",
+  "ilmuakidah": "علم العقيدة",
+
+  "tasawuf": "تصوف",
+  "akhlaq": "أخلاق",
+  "akhlaqtasawuf": "الأخلاق والتصوف",
+  "tazkiyatunnafs": "تزكية النفس",
+
+  "hadits": "حديث",
+  "ilmulhadits": "علم الحديث",
+  "musthalahhadits": "مصطلح الحديث",
+  "rijalulhadits": "رجال الحديث",
+  "jarhwatadil": "جرح وتعديل",
+
+  "quran": "قرآن",
+  "ulumulquran": "علوم القرآن",
+  "tafsir": "تفسير",
+  "tafsirahkam": "تفسير الأحكام",
+  "ilmutafsir": "علم التفسير",
+
+  "tajwid": "تجويد",
+  "qiraat": "قراءات",
+  "rasmulquran": "رسم القرآن",
+  "dhabtulquran": "ضبط القرآن",
+
+  "mantik": "منطق",
+  "ilmunnahw": "علم النحو",
+  "ilmusharaf": "علم الصرف",
+  "ilmulbalaghah": "علم البلاغة",
+
+  "tarikh": "تاريخ",
+  "tarikhislam": "تاريخ الإسلام",
+  "sirah": "سيرة",
+  "sirahnabawiyah": "السيرة النبوية",
+
+  "faraidh": "فرائض",
+  "hisabulfaraidh": "حساب الفرائض",
+
+  "falak": "فلك",
+  "ilmuhiat": "علم الهيئة",
+  "hisab": "حساب",
+  "hisabfalaki": "الحساب الفلكي",
+
+  "adab": "أدب",
+  "adabulalimwalmutallim": "أدب العالم والمتعلم",
+
+  "lughotulquran": "لغة القرآن",
+  "lughotulhadits": "لغة الحديث",
+
+  "khitobah": "خطابة",
+  "dakwah": "دعوة",
+  "manhaj": "منهج",
+  "manhajsalaf": "منهج السلف",
+
+  "qawaidnahwiyah": "قواعد نحوية",
+  "qawaidsharfiyah": "قواعد صرفية",
+
+  "bahthulmasail": "بحث المسائل",
+  "istinbath": "استنباط",
+  "istinbathahkam": "استنباط الأحكام",
+
+  "kitabah": "كتابة",
+  "imla": "إملاء",
+  "insya": "إنشاء",
+  "khat": "خط",
+  "khatarab": "الخط العربي"
 }
+
