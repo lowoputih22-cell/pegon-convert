@@ -5,7 +5,7 @@ fetch("arabOverride.json")
 
 /* MAP */
 const pegonMap = {
-  ng:'ڠ', ny:'ڽ', sy:'ش', kh:'خ', ch:'چ',
+  ng:'ڠ', ny:'پ', sy:'ش', kh:'خ', ch:'چ',
   a:'ا', i:'ي', u:'و', e:'ٓ', o:'و',
   b:'ب', c:'چ', d:'د', f:'ف', g:'ڮ', h:'ه',
   j:'ج', k:'ك', l:'ل', m:'م', n:'ن',
@@ -130,3 +130,4 @@ latinInput.addEventListener("keydown", e=>{
     convert();
   }
 });
+
